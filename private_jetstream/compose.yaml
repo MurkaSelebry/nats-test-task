@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  nats:
+    image: nats:latest
+    container_name: nats-server-1
+    entrypoint: ["-DV"]
+    env_file:
+      - .env
+    volumes:
+      - ./nats.conf:/etc/nats/nats.conf
+      - ./certs:/certs
+      - ./data:/data
+    ports:
+      - "${CLIENT_PORT}:${CLIENT_PORT}"
+      - "${HTTP_PORT}:${HTTP_PORT}"
+      - "${ROUTES_PORT}:${ROUTES_PORT}"
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+      - "${LEAF_PORT}:${LEAF_PORT}"
+    restart: unless-stopped
+    networks:
+      - nats_network
+    extra_hosts:
+      - "nats-server-1:${PRIVATE_JETSTREAM_IP}"
+      - "nats-server-2:${PUBLIC_JETSTREAM_IP}"
+    cap_add:
+      - NET_ADMIN  # For firewall rules
+
+networks:
+  nats_network:
+    driver: bridge
